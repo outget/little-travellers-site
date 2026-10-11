@@ -1,5 +1,8 @@
 // Used by both pages.
 
+// Shown on paused items that don't have their own message.
+const PAUSED_MESSAGE = "Paused";
+
 // How long a timer has been going, as "2mo 5d 03h 14m 09s".
 // A paused timer is measured up to the moment it was paused, so it stays frozen.
 function elapsed(timer) {
@@ -12,10 +15,16 @@ function elapsed(timer) {
 
   // ...then split what's left into days, hours, minutes, seconds.
   // (Math.max: a start date in the future shows zeros until it arrives.)
-  let seconds = Math.max(0, Math.floor((end - addMonths(start, months)) / 1000));
-  const days = Math.floor(seconds / 86400); seconds %= 86400;
-  const hours = Math.floor(seconds / 3600); seconds %= 3600;
-  const minutes = Math.floor(seconds / 60); seconds %= 60;
+  let seconds = Math.max(
+    0,
+    Math.floor((end - addMonths(start, months)) / 1000),
+  );
+  const days = Math.floor(seconds / 86400);
+  seconds %= 86400;
+  const hours = Math.floor(seconds / 3600);
+  seconds %= 3600;
+  const minutes = Math.floor(seconds / 60);
+  seconds %= 60;
 
   const pad = (n) => String(n).padStart(2, "0");
   return `${months}mo ${days}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
@@ -25,6 +34,16 @@ function addMonths(date, n) {
   const d = new Date(date);
   d.setMonth(d.getMonth() + n);
   return d;
+}
+
+// The message line under a name:
+//   paused   -> "⏸ " + its message, or the standard one if it has none
+//   running  -> its message, or nothing
+function messageHtml(timer) {
+  let text = timer.message || "";
+  if (timer.paused_at)
+    text = "⏸ " + PAUSED_MESSAGE + (timer.message ? " · " + timer.message : "");
+  return text ? `<div class="message">${esc(text)}</div>` : "";
 }
 
 // Makes text safe to put inside HTML (so a name like "<b>" shows as text, not markup).

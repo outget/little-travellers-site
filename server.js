@@ -13,9 +13,14 @@ db.exec(`
     name       TEXT NOT NULL,
     started_at INTEGER NOT NULL,  -- milliseconds since 1970 (what Date.now() returns)
     paused_at  INTEGER,           -- empty while running
-    message    TEXT               -- shown while paused
+    message    TEXT,              -- optional note shown under the name
+    location   TEXT
   )
 `);
+
+// Databases created before "location" existed don't have that column yet, so add it.
+// (On newer databases it's already there and this fails harmlessly.)
+try { db.exec("ALTER TABLE timers ADD COLUMN location TEXT"); } catch {}
 
 const allTimers = () => db.prepare("SELECT * FROM timers ORDER BY id").all();
 
@@ -42,8 +47,13 @@ app.get("/api/admin/timers", (req, res) => {
 
 // Add: starts from the date given, or from now if none was picked
 app.post("/api/admin/timers", (req, res) => {
-  db.prepare("INSERT INTO timers (name, started_at) VALUES (?, ?)")
-    .run(req.body.name, req.body.started_at ?? Date.now());
+  db.prepare("INSERT INTO timers (name, location, started_at) VALUES (?, ?, ?)")
+    .run(req.body.name, req.body.location || null, req.body.started_at ?? Date.now());
+  res.json(allTimers());
+});
+
+app.post("/api/admin/timers/:id/location", (req, res) => {
+  db.prepare("UPDATE timers SET location = ? WHERE id = ?").run(req.body.location || null, req.params.id);
   res.json(allTimers());
 });
 
@@ -58,22 +68,31 @@ app.patch("/api/admin/timers/:id", (req, res) => {
   res.json(allTimers());
 });
 
-// Reset: start counting from now again (and un-pause)
+// Reset: start counting from now again.
+// If it's paused, it stays paused, at zero (paused_at = started_at means 0 time has passed).
 app.post("/api/admin/timers/:id/reset", (req, res) => {
-  db.prepare("UPDATE timers SET started_at = ?, paused_at = NULL, message = NULL WHERE id = ?")
-    .run(Date.now(), req.params.id);
+  const now = Date.now();
+  db.prepare("UPDATE timers SET started_at = ?, paused_at = IIF(paused_at IS NULL, NULL, ?) WHERE id = ?")
+    .run(now, now, req.params.id);
   res.json(allTimers());
 });
 
 app.post("/api/admin/timers/:id/pause", (req, res) => {
-  db.prepare("UPDATE timers SET paused_at = ?, message = ? WHERE id = ? AND paused_at IS NULL")
-    .run(Date.now(), req.body.message, req.params.id);
+  db.prepare("UPDATE timers SET paused_at = ? WHERE id = ? AND paused_at IS NULL")
+    .run(Date.now(), req.params.id);
+  res.json(allTimers());
+});
+
+// Message shown under the name, paused or not. Empty = no message
+// (a paused item with no message shows PAUSED_MESSAGE from shared.js).
+app.post("/api/admin/timers/:id/message", (req, res) => {
+  db.prepare("UPDATE timers SET message = ? WHERE id = ?").run(req.body.message || null, req.params.id);
   res.json(allTimers());
 });
 
 // Resume: move the start forward by however long it was paused, so it carries on where it stopped
 app.post("/api/admin/timers/:id/resume", (req, res) => {
-  db.prepare(`UPDATE timers SET started_at = started_at + (? - paused_at), paused_at = NULL, message = NULL
+  db.prepare(`UPDATE timers SET started_at = started_at + (? - paused_at), paused_at = NULL
               WHERE id = ? AND paused_at IS NOT NULL`)
     .run(Date.now(), req.params.id);
   res.json(allTimers());
