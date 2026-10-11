@@ -1,7 +1,7 @@
 // Used by both pages.
 
 // Shown on paused items that don't have their own message.
-const PAUSED_MESSAGE = "Paused";
+const PAUSED_MESSAGE = "paused";
 
 // How long a timer has been going, as "2mo 5d 03h 14m 09s".
 // A paused timer is measured up to the moment it was paused, so it stays frozen.

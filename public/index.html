@@ -9,13 +9,13 @@
         />
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Count-up</title>
+        <title>travellers</title>
         <link rel="stylesheet" href="style.css" />
     </head>
     <body>
-        <a class="admin-link" href="/admin">Admin</a>
-        <h1>Count-up</h1>
-        <table id="list"></table>
+        <a class="admin-link" href="/admin">admin</a>
+        <h1>travellers</h1>
+        <div id="list" class="grid"></div>
 
         <script src="shared.js"></script>
         <script>
@@ -29,15 +29,13 @@
                 document.getElementById("list").innerHTML = timers
                     .map(
                         (t) => `
-        <tr class="${t.paused_at ? "paused" : ""}">
-          <td>
-            ${esc(t.name)}
-            ${messageHtml(t)}
-          </td>
-          <td>${esc(t.location)}</td>
-          <td class="time" id="time-${t.id}">${elapsed(t)}</td>
-        </tr>
-      `,
+                  <div class="card ${t.paused_at ? "paused" : ""}">
+                    <h2>${esc(t.name)}</h2>
+                    ${t.location ? `<div class="since">📍 ${esc(t.location)}</div>` : ""}
+                    <div class="time" id="time-${t.id}">${elapsed(t)}</div>
+                    ${messageHtml(t)}
+                  </div>
+                `,
                     )
                     .join("");
             }

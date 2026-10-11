@@ -9,15 +9,15 @@
         />
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Admin</title>
+        <title>admin</title>
         <link rel="stylesheet" href="style.css" />
     </head>
     <body>
-        <h1>Admin</h1>
+        <h1>admin</h1>
 
         <form id="login">
             <input id="password" type="password" placeholder="Password" />
-            <button>Log in</button>
+            <button>log in</button>
         </form>
 
         <div id="panel" hidden>
@@ -31,7 +31,7 @@
                 />
                 <button>Add</button>
             </form>
-            <table id="list"></table>
+            <div id="list" class="grid"></div>
             <p><a href="/">View public page</a></p>
         </div>
 
@@ -73,29 +73,27 @@
                 document.getElementById("list").innerHTML = timers
                     .map(
                         (t) => `
-        <tr class="${t.paused_at ? "paused" : ""}">
-          <td>
-            ${esc(t.name)}
-            <div class="since">since ${new Date(t.started_at).toLocaleString()}</div>
-            ${messageHtml(t)}
-          </td>
-          <td>${esc(t.location)}</td>
-          <td class="time" id="time-${t.id}">${elapsed(t)}</td>
-          <td>
-            <button onclick="reset(${t.id})">Reset</button>
-            <button onclick="setDate(${t.id})">Set date</button>
-            ${
-                t.paused_at
-                    ? `<button onclick="resume(${t.id})">Resume</button>`
-                    : `<button onclick="pause(${t.id})">Pause</button>`
-            }
-            <button onclick="message(${t.id})">Message</button>
-            <button onclick="rename(${t.id})">Rename</button>
-            <button onclick="setLocation(${t.id})">Location</button>
-            <button onclick="remove(${t.id})">Delete</button>
-          </td>
-        </tr>
-      `,
+                <div class="card ${t.paused_at ? "paused" : ""}">
+                  <h2>${esc(t.name)}</h2>
+                  ${t.location ? `<div class="since">📍 ${esc(t.location)}</div>` : ""}
+                  <div class="since">since ${new Date(t.started_at).toLocaleString()}</div>
+                  <div class="time" id="time-${t.id}">${elapsed(t)}</div>
+                  ${messageHtml(t)}
+                  <div class="actions">
+                    ${
+                        t.paused_at
+                            ? `<button onclick="resume(${t.id})">Resume</button>`
+                            : `<button onclick="pause(${t.id})">Pause</button>`
+                    }
+                    <button onclick="reset(${t.id})">Reset</button>
+                    <button onclick="message(${t.id})">Message</button>
+                    <button onclick="setDate(${t.id})">Date</button>
+                    <button onclick="rename(${t.id})">Rename</button>
+                    <button onclick="setLocation(${t.id})">Location</button>
+                    <button class="danger" onclick="remove(${t.id})">Delete</button>
+                  </div>
+                </div>
+              `,
                     )
                     .join("");
             }

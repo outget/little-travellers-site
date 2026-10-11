@@ -9,6 +9,10 @@
     --red: #fb4934;
 }
 
+[hidden] {
+    display: none !important;
+}
+
 .fira-sans-thin {
     font-family: "Fira Sans", sans-serif;
     font-weight: 100;
@@ -171,7 +175,74 @@ input {
     border: 1px solid var(--line);
     padding: 4px 10px;
     font: inherit;
+    border-radius: 6px;
 }
 button:hover {
     border-color: var(--fg);
+}
+/* As many 260px-or-wider columns as fit; 1 column on phones */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+}
+
+.card {
+    background: var(--bg1); /* a shade lighter than the page */
+    border: 1px solid var(--line);
+    border-radius: 8px; /* rounded corners; 0 for sharp gruvbox-style edges */
+    padding: 14px 16px;
+}
+
+.card h2 {
+    margin: 0 0 6px;
+    font-size: 0.8em;
+    text-transform: uppercase; /* the small uppercase titles YoshiTracker uses */
+    letter-spacing: 0.06em;
+    color: var(--muted);
+}
+
+.card .time {
+    font-size: 1.4em;
+    margin: 6px 0;
+}
+/* buttons at the bottom of each card, wrapping neatly with even gaps */
+.actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line); /* separates controls from the info above */
+}
+
+/* Delete stands out so you don't hit it by accident */
+button.danger {
+    color: var(--red);
+}
+button.danger:hover {
+    border-color: var(--red);
+}
+
+/* the Add form and the login box look like cards too */
+#add,
+#login {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    background: var(--bg1);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+}
+#add input,
+#login input {
+    flex: 1;
+    min-width: 140px;
+} /* fields share the width, wrap on phones */
+
+/* paused cards dimmed slightly so they're easy to spot */
+.card.paused {
+    opacity: 0.75;
 }
