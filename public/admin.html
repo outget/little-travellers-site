@@ -1,0 +1,143 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1>Admin</h1>
+
+  <form id="login">
+    <input id="password" type="password" placeholder="Password">
+    <button>Log in</button>
+  </form>
+
+  <div id="panel" hidden>
+    <form id="add">
+      <input id="name" placeholder="Name" required>
+      <input id="date" type="datetime-local" title="Count up from (leave empty for now)">
+      <button>Add</button>
+    </form>
+    <table id="list"></table>
+    <p><a href="/">View public page</a></p>
+  </div>
+
+  <script src="shared.js"></script>
+  <script>
+    let password = localStorage.getItem("password"); // remembered after the first login
+    let timers = [];
+
+    // Every admin request goes through here: it sends the password,
+    // and the server answers with the updated list of timers.
+    async function api(method, path, body) {
+      const res = await fetch("/api/admin/timers" + path, {
+        method,
+        headers: { "Content-Type": "application/json", "X-Password": password },
+        body: JSON.stringify(body),
+      });
+
+      if (res.status === 401) {
+        localStorage.removeItem("password");
+        document.getElementById("password").value = "";
+        document.getElementById("password").placeholder = "Wrong password, try again";
+        document.getElementById("login").hidden = false;
+        document.getElementById("panel").hidden = true;
+        return;
+      }
+
+      localStorage.setItem("password", password);
+      document.getElementById("login").hidden = true;
+      document.getElementById("panel").hidden = false;
+      timers = await res.json();
+      draw();
+    }
+
+    function draw() {
+      document.getElementById("list").innerHTML = timers.map((t) => `
+        <tr class="${t.paused_at ? "paused" : ""}">
+          <td>
+            ${esc(t.name)}
+            <div class="since">since ${new Date(t.started_at).toLocaleString()}</div>
+            ${t.paused_at ? `<div class="message">⏸ ${esc(t.message || "Paused")}</div>` : ""}
+          </td>
+          <td class="time" id="time-${t.id}">${elapsed(t)}</td>
+          <td>
+            <button onclick="reset(${t.id})">Reset</button>
+            <button onclick="setDate(${t.id})">Set date</button>
+            ${t.paused_at
+              ? `<button onclick="resume(${t.id})">Resume</button>`
+              : `<button onclick="pause(${t.id})">Pause</button>`}
+            <button onclick="rename(${t.id})">Rename</button>
+            <button onclick="remove(${t.id})">Delete</button>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    // ---------- button actions ----------
+
+    function reset(id) {
+      if (confirm("Reset to zero, starting now?")) api("POST", `/${id}/reset`);
+    }
+
+    function pause(id) {
+      const message = prompt("Message to show while paused:");
+      if (message !== null) api("POST", `/${id}/pause`, { message });
+    }
+
+    function setDate(id) {
+      const text = prompt("Count up from (e.g. 2025-03-14 or 2025-03-14 18:30):");
+      if (!text) return;
+      const started_at = parseDate(text);
+      if (isNaN(started_at)) return alert("Couldn't read that date. Use the format 2025-03-14 18:30");
+      api("POST", `/${id}/start`, { started_at });
+    }
+
+    // Turns "2025-03-14" or "2025-03-14 18:30" into a timestamp, in your local time.
+    // (A bare "2025-03-14" would otherwise be read as midnight UTC, so we add the time ourselves.)
+    function parseDate(text) {
+      text = text.trim().replace(" ", "T");
+      if (text.length === 10) text += "T00:00";
+      return new Date(text).getTime();
+    }
+
+    function resume(id) {
+      api("POST", `/${id}/resume`);
+    }
+
+    function rename(id) {
+      const name = prompt("New name:");
+      if (name) api("PATCH", `/${id}`, { name });
+    }
+
+    function remove(id) {
+      if (confirm("Delete this one?")) api("DELETE", `/${id}`);
+    }
+
+    // ---------- forms ----------
+
+    document.getElementById("login").onsubmit = (e) => {
+      e.preventDefault(); // stop the browser reloading the page
+      password = document.getElementById("password").value;
+      api("GET", "");
+    };
+
+    document.getElementById("add").onsubmit = (e) => {
+      e.preventDefault();
+      const name = document.getElementById("name");
+      const date = document.getElementById("date");
+      api("POST", "", {
+        name: name.value,
+        started_at: date.value ? new Date(date.value).getTime() : undefined, // empty = start now
+      });
+      name.value = "";
+      date.value = "";
+    };
+
+    if (password) api("GET", ""); // already logged in before? go straight to the panel
+    setInterval(() => tick(timers), 1000);
+  </script>
+</body>
+</html>

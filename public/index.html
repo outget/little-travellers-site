@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Travellers</title>
+        <link rel="stylesheet" href="style.css" />
+    </head>
+    <body>
+        <h1>Travellers</h1>
+        <table id="list"></table>
+
+        <script src="shared.js"></script>
+        <script>
+            let timers = [];
+
+            // Get the latest list from the server and rebuild the table
+            async function load() {
+                const res = await fetch("/api/timers");
+                timers = await res.json();
+
+                document.getElementById("list").innerHTML = timers
+                    .map(
+                        (t) => `
+        <tr class="${t.paused_at ? "paused" : ""}">
+          <td>
+            ${esc(t.name)}
+            ${t.paused_at ? `<div class="message">⏸ ${esc(t.message || "Paused")}</div>` : ""}
+          </td>
+          <td class="time" id="time-${t.id}">${elapsed(t)}</td>
+        </tr>
+      `,
+                    )
+                    .join("");
+            }
+
+            load();
+            setInterval(load, 15000); // check for admin changes every 15 seconds
+            setInterval(() => tick(timers), 1000); // update the clocks every second
+        </script>
+    </body>
+</html>

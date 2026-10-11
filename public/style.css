@@ -1,0 +1,56 @@
+:root {
+    --bg: #282828; /* gruvbox dark background */
+    --bg1: #3c3836; /* slightly lighter: buttons, inputs */
+    --line: #504945; /* borders */
+    --fg: #ebdbb2; /* text */
+    --muted: #928374; /* grey text, like "since ..." */
+    --yellow: #fabd2f; /* pause message */
+    --green: #b8bb26;
+    --red: #fb4934;
+}
+body {
+    max-width: 640px;
+    margin: 40px auto;
+    padding: 24px;
+    border: 1px solid var(--line);
+    background: var(--bg);
+    color: var(--fg);
+    font-family: monospace;
+}
+table {
+    border-collapse: collapse;
+    width: 100%;
+    border: 1px solid var(--line);
+}
+td {
+    border: 1px solid var(--line);
+    padding: 10px 12px;
+}
+.time {
+    font-variant-numeric: tabular-nums;
+    font-size: 1.2em;
+    text-align: right;
+    white-space: nowrap;
+}
+.paused .time {
+    opacity: 0.5;
+}
+.since {
+    opacity: 0.6;
+    font-size: 0.85em;
+}
+.message {
+    color: #c80;
+    font-size: 0.9em;
+}
+button,
+input {
+    background: var(--bg1);
+    color: var(--fg);
+    border: 1px solid var(--line);
+    padding: 4px 10px;
+    font: inherit;
+}
+button:hover {
+    border-color: var(--fg);
+}
