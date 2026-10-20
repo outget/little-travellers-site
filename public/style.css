@@ -550,3 +550,23 @@ textarea {
 .board-msg button {
     margin-top: 6px;
 }
+
+/* phones: give the cams as much width as possible */
+@media (max-width: 600px) {
+    body {
+        padding: 14px 10px 40px; /* less empty space at the screen edges */
+    }
+    .cams {
+        margin-left: -10px; /* run the cams card to the screen edges (cancels the body padding) */
+        margin-right: -10px;
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+    }
+    .cam-stage {
+        margin: 0 -18px; /* run the video to the card's edges (cancels the card padding) */
+        border-left: 0;
+        border-right: 0;
+        border-radius: 0;
+    }
+}
