@@ -34,6 +34,11 @@
                 <button>Add</button>
             </form>
             <div id="list" class="grid"></div>
+
+            <div class="card board-card">
+                <h2>message board</h2>
+                <div class="board-list" id="board-list"></div>
+            </div>
             <p><a href="/">View public page</a></p>
         </div>
 
@@ -69,6 +74,37 @@
                 document.getElementById("panel").hidden = false;
                 timers = await res.json();
                 draw();
+                loadMessages();
+            }
+
+            // ---------- message board ----------
+
+            async function loadMessages() {
+                const res = await fetch("/api/messages");
+                drawMessages((await res.json()).messages);
+            }
+
+            function drawMessages(messages) {
+                document.getElementById("board-list").innerHTML =
+                    messages
+                        .map(
+                            (m) => `
+                <div class="board-msg">
+                  <div class="board-meta"><b>${esc(m.name)}</b> · ${new Date(m.created_at).toLocaleString()}</div>
+                  <div class="board-text">${esc(m.text)}</div>
+                  <button class="danger" onclick="removeMessage(${m.id})">Delete</button>
+                </div>`,
+                        )
+                        .join("") || `<p class="board-empty">no messages</p>`;
+            }
+
+            async function removeMessage(id) {
+                if (!confirm("Delete this message?")) return;
+                const res = await fetch("/api/admin/messages/" + id, {
+                    method: "DELETE",
+                    headers: { "X-Password": password },
+                });
+                if (res.ok) drawMessages((await res.json()).messages);
             }
 
             function draw() {

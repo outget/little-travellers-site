@@ -83,8 +83,43 @@
             </div>
         </div>
 
+        <div class="card board-card">
+            <h2>message board</h2>
+            <p class="note">
+                we miss our travellers dearly, write them a message here :)
+            </p>
+            <form id="board-form">
+                <input
+                    id="board-name"
+                    placeholder="name"
+                    maxlength="30"
+                    required
+                />
+                <textarea
+                    id="board-text"
+                    placeholder="say something (one message a day)"
+                    maxlength="500"
+                    rows="3"
+                    required
+                ></textarea>
+                <!-- honeypot: hidden from people, bots fill it in and get ignored -->
+                <input
+                    id="board-website"
+                    class="honeypot"
+                    tabindex="-1"
+                    autocomplete="off"
+                    aria-hidden="true"
+                />
+                <button>post</button>
+            </form>
+            <p class="board-wait" id="board-wait" hidden></p>
+            <p class="board-error" id="board-error"></p>
+            <div class="board-list" id="board-list"></div>
+        </div>
+
         <script src="shared.js"></script>
         <script src="2048.js"></script>
+        <script src="board.js"></script>
         <script>
             let timers = [];
 

@@ -339,6 +339,12 @@ button.danger:hover {
     color: var(--fg);
 }
 
+.note {
+    margin: 0 0 12px;
+    font-size: 0.9em;
+    color: var(--muted); /* the grey used for small text; --fg is the main text colour */
+}
+
 /* 2048 card */
 /* 2048 and live chess: two equal columns, one column on narrow screens */
 .games {
@@ -420,18 +426,44 @@ button.danger:hover {
     }
 }
 /* gruvbox colours, getting warmer as the numbers grow */
-.tile[data-v="2"] { background: #504945; }
-.tile[data-v="4"] { background: #665c54; }
-.tile[data-v="8"] { background: #458588; }
-.tile[data-v="16"] { background: #689d6a; }
-.tile[data-v="32"] { background: #98971a; }
-.tile[data-v="64"] { background: #d79921; color: var(--bg); }
-.tile[data-v="128"] { background: #d65d0e; font-size: 1.3em; }
-.tile[data-v="256"] { background: #cc241d; font-size: 1.3em; }
-.tile[data-v="512"] { background: #b16286; font-size: 1.3em; }
+.tile[data-v="2"] {
+    background: #504945;
+}
+.tile[data-v="4"] {
+    background: #665c54;
+}
+.tile[data-v="8"] {
+    background: #458588;
+}
+.tile[data-v="16"] {
+    background: #689d6a;
+}
+.tile[data-v="32"] {
+    background: #98971a;
+}
+.tile[data-v="64"] {
+    background: #d79921;
+    color: var(--bg);
+}
+.tile[data-v="128"] {
+    background: #d65d0e;
+    font-size: 1.3em;
+}
+.tile[data-v="256"] {
+    background: #cc241d;
+    font-size: 1.3em;
+}
+.tile[data-v="512"] {
+    background: #b16286;
+    font-size: 1.3em;
+}
 .tile[data-v="1024"],
 .tile[data-v="2048"],
-.tile[data-v="4096"] { background: var(--yellow); color: var(--bg); font-size: 1.1em; }
+.tile[data-v="4096"] {
+    background: var(--yellow);
+    color: var(--bg);
+    font-size: 1.1em;
+}
 .game-status {
     min-height: 1.2em; /* keeps the card from jumping when a message appears */
     margin: 10px 0 0;
@@ -443,4 +475,78 @@ button.danger:hover {
     text-align: center;
     font-size: 0.8em;
     color: var(--muted);
+}
+
+/* message board */
+.board-card {
+    margin-top: 14px;
+}
+#board-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+#board-form button {
+    align-self: flex-end; /* post button on the right */
+}
+textarea {
+    background: var(--bg1);
+    color: var(--fg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font: inherit;
+    resize: vertical;
+}
+#board-form input,
+#board-form textarea {
+    background: var(
+        --bg
+    ); /* a shade darker than the card, so the fields stand out */
+}
+/* off-screen instead of display: none, which some bots know to skip */
+.honeypot {
+    position: absolute;
+    left: -9999px;
+}
+.board-wait {
+    margin: 0;
+    padding: 10px 12px;
+    border: 1px dashed var(--line);
+    border-radius: 6px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums; /* the countdown digits don't jiggle */
+}
+.board-error {
+    margin: 6px 0 0;
+    color: var(--red);
+}
+.board-error:empty {
+    display: none;
+}
+.board-list {
+    margin-top: 12px;
+}
+.board-msg {
+    padding: 10px 0;
+    border-top: 1px solid var(--line);
+}
+.board-meta {
+    font-size: 0.85em;
+    color: var(--muted);
+}
+.board-meta b {
+    color: var(--yellow);
+}
+.board-text {
+    margin-top: 4px;
+    white-space: pre-wrap; /* keep line breaks people typed */
+    overflow-wrap: anywhere; /* long links don't stretch the card */
+}
+.board-empty {
+    margin: 0;
+    color: var(--muted);
+}
+.board-msg button {
+    margin-top: 6px;
 }
