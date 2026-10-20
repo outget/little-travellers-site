@@ -133,15 +133,31 @@ td button {
     white-space: nowrap; /* keep each button's label on one line */
 }
 
-body {
-    max-width: 640px;
-    margin: 40px auto;
-    padding: 24px;
-    border: 1px solid var(--line);
-    border-radius: 12px;
+html {
     background: var(--bg);
+}
+/* no box around the page: content just sits on the background, like YoshiTracker */
+body {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 22px 20px 60px;
+    background-image: radial-gradient(
+        1100px 480px at 50% -8%,
+        rgba(250, 189, 47, 0.05),
+        transparent 70%
+    ); /* faint yellow glow at the top */
     color: var(--fg);
     font-family: "Fira Sans";
+}
+/* page title with a thin line under it */
+h1 {
+    margin: 0 0 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+    font-size: 30px;
+    letter-spacing: 0.06em;
+    color: var(--yellow);
+    line-height: 1;
 }
 table {
     border-collapse: collapse;
@@ -155,8 +171,16 @@ td {
 .time {
     font-variant-numeric: tabular-nums;
     font-size: 1.2em;
+    font-weight: 700;
     text-align: left;
     white-space: nowrap;
+}
+/* the small unit letters after each number, like YoshiTracker's "20 d" */
+.time .u {
+    margin-left: 2px;
+    font-size: 0.6em;
+    font-weight: 400;
+    color: var(--muted);
 }
 .paused .time {
     opacity: 0.5;
@@ -185,22 +209,23 @@ button:hover {
 .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 12px;
+    gap: 14px;
 }
 
 .card {
     background: var(--bg1); /* a shade lighter than the page */
     border: 1px solid var(--line);
-    border-radius: 8px; /* rounded corners; 0 for sharp gruvbox-style edges */
-    padding: 14px 16px;
+    border-radius: 12px; /* rounded corners; 0 for sharp gruvbox-style edges */
+    padding: 14px 18px;
+    min-width: 0; /* lets long content shrink instead of stretching the grid */
 }
 
 .card h2 {
-    margin: 0 0 6px;
-    font-size: 0.8em;
-    text-transform: uppercase; /* the small uppercase titles YoshiTracker uses */
-    letter-spacing: 0.06em;
-    color: var(--muted);
+    margin: 0 0 10px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 0.05em; /* coloured, slightly spaced titles like YoshiTracker */
+    color: var(--yellow);
 }
 
 .card .time {
@@ -246,4 +271,176 @@ button.danger:hover {
 /* paused cards dimmed slightly so they're easy to spot */
 .card.paused {
     opacity: 0.75;
+}
+
+/* cams: one full-width card with a pill per city, like YoshiTracker */
+.cams {
+    margin-top: 14px; /* same gap as between cards */
+}
+.filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    margin-bottom: 12px;
+}
+.filters button {
+    font-size: 12px;
+    padding: 4px 11px;
+    border-radius: 999px; /* pill shape */
+    background: transparent;
+    color: var(--muted);
+    cursor: pointer;
+}
+.filters button.on {
+    background: var(--yellow);
+    border-color: var(--yellow);
+    color: var(--bg); /* dark text on the yellow pill */
+}
+/* 16:9 box the video (or the "no cam" message) sits in */
+.cam-stage {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--bg);
+    overflow: hidden; /* clip the video to the rounded corners */
+}
+.cam-stage iframe {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+.cam-note {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column; /* doge above the message */
+    gap: 12px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    text-align: center;
+    color: var(--muted);
+}
+/* the doge icon, drawn as a mask so it takes the text colour */
+.doge {
+    width: 64px;
+    height: 64px;
+    background: currentColor; /* same colour as the message under it */
+    mask: url(doge.svg) center / contain no-repeat;
+}
+.cam-credit {
+    margin: 10px 0 0;
+    font-size: 0.9em;
+    color: var(--muted);
+}
+.cam-credit a {
+    color: var(--fg);
+}
+
+/* 2048 card */
+/* 2048 and live chess: two equal columns, one column on narrow screens */
+.games {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 14px;
+    margin-top: 14px;
+}
+/* both cards stack their parts top to bottom, so the hints can sit at the bottom */
+.game,
+.chess {
+    display: flex;
+    flex-direction: column;
+}
+.games .game-hint {
+    margin-top: auto; /* pushed to the bottom of the card, level in both cards */
+    padding-top: 10px;
+}
+.chess iframe {
+    display: block;
+    width: 100%;
+    max-width: 340px; /* same width as the 2048 board */
+    margin: auto; /* centred, also vertically in the space above the hint */
+    aspect-ratio: 10 / 11; /* board plus the player names Lichess shows */
+    border: 0;
+}
+.game-hint a {
+    color: var(--fg);
+}
+.game-bar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 12px;
+    color: var(--muted);
+    font-size: 0.9em;
+}
+.game-bar b {
+    color: var(--fg);
+    font-variant-numeric: tabular-nums;
+}
+.game-bar button {
+    margin-left: auto; /* pushed to the right */
+}
+.board {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    max-width: 340px;
+    width: 100%;
+    box-sizing: border-box; /* 340px including the padding, same as the chess board */
+    margin: 0 auto;
+    padding: 8px;
+    border-radius: 8px;
+    background: var(--bg);
+    touch-action: none; /* swipes move tiles instead of scrolling the page */
+    outline: none;
+}
+.board:focus {
+    box-shadow: 0 0 0 2px var(--yellow); /* shows the arrow keys go to the game */
+}
+.tile {
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: var(--bg1); /* empty cell */
+    font-size: 1.5em;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+.tile.new {
+    animation: pop 0.15s ease-out;
+}
+@keyframes pop {
+    from {
+        transform: scale(0.6);
+    }
+}
+/* gruvbox colours, getting warmer as the numbers grow */
+.tile[data-v="2"] { background: #504945; }
+.tile[data-v="4"] { background: #665c54; }
+.tile[data-v="8"] { background: #458588; }
+.tile[data-v="16"] { background: #689d6a; }
+.tile[data-v="32"] { background: #98971a; }
+.tile[data-v="64"] { background: #d79921; color: var(--bg); }
+.tile[data-v="128"] { background: #d65d0e; font-size: 1.3em; }
+.tile[data-v="256"] { background: #cc241d; font-size: 1.3em; }
+.tile[data-v="512"] { background: #b16286; font-size: 1.3em; }
+.tile[data-v="1024"],
+.tile[data-v="2048"],
+.tile[data-v="4096"] { background: var(--yellow); color: var(--bg); font-size: 1.1em; }
+.game-status {
+    min-height: 1.2em; /* keeps the card from jumping when a message appears */
+    margin: 10px 0 0;
+    text-align: center;
+    color: var(--yellow);
+}
+.game-hint {
+    margin: 4px 0 0;
+    text-align: center;
+    font-size: 0.8em;
+    color: var(--muted);
 }

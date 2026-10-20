@@ -3,22 +3,13 @@
 // Shown on paused items that don't have their own message.
 const PAUSED_MESSAGE = "paused";
 
-// How long a timer has been going, as "2mo 5d 03h 14m 09s".
+// How long a timer has been going, as HTML like "20d 03h 14m 09s", with each unit
+// letter in a small <span class="u"> (days are the biggest unit, so no months).
 // A paused timer is measured up to the moment it was paused, so it stays frozen.
 function elapsed(timer) {
-  const start = new Date(timer.started_at);
-  const end = new Date(timer.paused_at ?? Date.now());
-
-  // Months have different lengths, so count whole months on the calendar first...
-  let months = 0;
-  while (addMonths(start, months + 1) <= end) months++;
-
-  // ...then split what's left into days, hours, minutes, seconds.
+  const end = timer.paused_at ?? Date.now();
   // (Math.max: a start date in the future shows zeros until it arrives.)
-  let seconds = Math.max(
-    0,
-    Math.floor((end - addMonths(start, months)) / 1000),
-  );
+  let seconds = Math.max(0, Math.floor((end - timer.started_at) / 1000));
   const days = Math.floor(seconds / 86400);
   seconds %= 86400;
   const hours = Math.floor(seconds / 3600);
@@ -27,13 +18,13 @@ function elapsed(timer) {
   seconds %= 60;
 
   const pad = (n) => String(n).padStart(2, "0");
-  return `${months}mo ${days}d ${pad(hours)}h ${pad(minutes)}m ${pad(seconds)}s`;
-}
-
-function addMonths(date, n) {
-  const d = new Date(date);
-  d.setMonth(d.getMonth() + n);
-  return d;
+  const part = (n, unit) => `${n}<span class="u">${unit}</span>`;
+  return [
+    part(days, "d"),
+    part(pad(hours), "h"),
+    part(pad(minutes), "m"),
+    part(pad(seconds), "s"),
+  ].join(" ");
 }
 
 // The message line under a name:
@@ -57,6 +48,6 @@ function esc(text) {
 function tick(timers) {
   for (const t of timers) {
     const cell = document.getElementById("time-" + t.id);
-    if (cell) cell.textContent = elapsed(t);
+    if (cell) cell.innerHTML = elapsed(t);
   }
 }

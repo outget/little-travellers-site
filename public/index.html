@@ -1,15 +1,17 @@
 <!doctype html>
-<html>
+<html lang="en">
     <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>travellers</title>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
             href="https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
             rel="stylesheet"
         />
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>travellers</title>
+        <link rel="icon" type="image/png" href="site-icon.png" />
+        <link rel="apple-touch-icon" href="site-icon.png" />
         <link rel="stylesheet" href="style.css" />
     </head>
     <body>
@@ -17,11 +19,76 @@
         <h1>travellers</h1>
         <div id="list" class="grid"></div>
 
+        <div class="card cams">
+            <h2>cams</h2>
+            <div class="filters" id="cam-filters"></div>
+            <div class="cam-stage">
+                <iframe
+                    id="cam-frame"
+                    allow="
+                        autoplay;
+                        encrypted-media;
+                        fullscreen;
+                        picture-in-picture;
+                    "
+                    allowfullscreen
+                    title="Webcam"
+                ></iframe>
+                <div class="cam-note" id="cam-note" hidden>
+                    <span class="doge" aria-hidden="true"></span>
+                    <span id="cam-note-text"></span>
+                </div>
+            </div>
+            <p class="cam-credit" id="cam-credit"></p>
+        </div>
+
+        <!-- 2048 and the live chess game side by side (stacked on phones) -->
+        <div class="games">
+            <div class="card game">
+                <h2>2048</h2>
+                <div class="game-bar">
+                    <span>score <b id="g2048-score">0</b></span>
+                    <span>best <b id="g2048-best">0</b></span>
+                    <button id="g2048-new">new game</button>
+                </div>
+                <!-- tabindex makes the board focusable so it can take the arrow keys -->
+                <div
+                    class="board"
+                    id="g2048-board"
+                    tabindex="0"
+                    aria-label="2048 board"
+                ></div>
+                <p class="game-status" id="g2048-status"></p>
+                <p class="game-hint">
+                    click the board, then use the arrow keys, or swipe
+                </p>
+            </div>
+
+            <div class="card chess">
+                <h2>live chess</h2>
+                <iframe
+                    src="https://lichess.org/tv/frame?theme=brown&bg=dark"
+                    allowtransparency="true"
+                    title="Live chess on Lichess TV"
+                ></iframe>
+                <p class="game-hint">
+                    from:
+                    <a
+                        href="https://lichess.org/tv"
+                        target="_blank"
+                        rel="noopener"
+                        >Lichess TV</a
+                    >
+                </p>
+            </div>
+        </div>
+
         <script src="shared.js"></script>
+        <script src="2048.js"></script>
         <script>
             let timers = [];
 
-            // Get the latest list from the server and rebuild the table
+            // Get the latest list from the server and rebuild the cards
             async function load() {
                 const res = await fetch("/api/timers");
                 timers = await res.json();
@@ -40,7 +107,80 @@
                     .join("");
             }
 
+            // The cams card: one pill per city. Each cam gives either a video address
+            // (src, which may need looking up) or just a message to show instead.
+            const CAMS = {
+                munich: {
+                    label: "Munich",
+                    src: () =>
+                        "https://webtv.feratel.com/webtv/?design=v4&cam=3017&lg=de",
+                    credit: `webcam: <a href="https://www.muenchen.de/en/sights/webcam-live-munich-marienplatz-olympiapark-and-more" target="_blank" rel="noopener">muenchen.de</a> / feratel`,
+                },
+                bucharest: {
+                    label: "Bucharest",
+                    // The stream restarts with a new YouTube video every few hours,
+                    // so ask the server which one is live right now
+                    src: async () => {
+                        const res = await fetch("/api/bucharest-live");
+                        const { videoId } = await res.json();
+                        return (
+                            videoId &&
+                            `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&playsinline=1`
+                        );
+                    },
+                    offline: "the Bucharest cam isn't live right now",
+                    credit: `webcam: <a href="https://www.youtube.com/channel/UCE5jk2omKe23EUKPJtHlzEg/live" target="_blank" rel="noopener">Calea Victoriei on YouTube</a>`,
+                },
+                london: {
+                    label: "London",
+                    message: "wow, such empty",
+                },
+            };
+            let currentCam = "munich";
+
+            document.getElementById("cam-filters").innerHTML = Object.entries(
+                CAMS,
+            )
+                .map(
+                    ([id, cam]) =>
+                        `<button data-cam="${id}">${cam.label}</button>`,
+                )
+                .join("");
+            document
+                .getElementById("cam-filters")
+                .addEventListener("click", (e) => {
+                    if (e.target.dataset.cam) showCam(e.target.dataset.cam);
+                });
+
+            async function showCam(id) {
+                currentCam = id;
+                const cam = CAMS[id];
+                for (const b of document.querySelectorAll(
+                    "#cam-filters button",
+                ))
+                    b.classList.toggle("on", b.dataset.cam === id);
+                document.getElementById("cam-credit").innerHTML =
+                    cam.credit || "";
+
+                const src = cam.src ? await cam.src() : null;
+                if (currentCam !== id) return; // another pill was clicked while we were looking up
+
+                const frame = document.getElementById("cam-frame");
+                const note = document.getElementById("cam-note");
+                frame.hidden = !src;
+                note.hidden = !!src;
+                document.getElementById("cam-note-text").textContent = src
+                    ? ""
+                    : cam.message || cam.offline;
+                // only reload when the address changed; about:blank stops the old video playing
+                const next = src || "about:blank";
+                if (frame.getAttribute("src") !== next) frame.src = next;
+            }
+
             load();
+            showCam(currentCam);
+            // re-check the current cam now and then, e.g. Bucharest moving to a new stream
+            setInterval(() => showCam(currentCam), 10 * 60 * 1000);
             setInterval(load, 15000); // check for admin changes every 15 seconds
             setInterval(() => tick(timers), 1000); // update the clocks every second
         </script>

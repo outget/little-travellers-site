@@ -1,0 +1,6 @@
+<!-- "doge" icon from TDesign Icons, https://github.com/Tencent/tdesign-icons
+     MIT License, Copyright (c) 2021-present TDesign -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square">
+    <path d="M22 12V2H18.1111L16.6528 3.88544M2 12V2H5.33333L7.27778 3.88544M22 12.5882C22 17.7862 17.5228 22 12 22C6.47715 22 2 17.7862 2 12.5882C2 7.39026 6.47715 3.17647 12 3.17647C17.5228 3.17647 22 7.39026 22 12.5882Z" />
+    <path d="M8 10V11M16 10V11M15.3143 14.7043C14.2568 15.4235 12.8053 15.1088 12.0009 13.5C11.1965 15.1088 9.74503 15.4235 8.6875 14.7043M13.9164 15.3C13.5369 16.3265 12.7404 18 12.0009 18C11.2613 18 10.4648 16.3265 10.0853 15.3" />
+</svg>
