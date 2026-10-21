@@ -213,6 +213,11 @@ button:hover {
     grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 14px;
 }
+/* count-ups: at most 3 per row (each at least a third of the row), so the cams and
+   message board below line up with them */
+.countups {
+    grid-template-columns: repeat(auto-fit, minmax(max(260px, (100% - 2 * 14px) / 3), 1fr));
+}
 
 .card {
     background: var(--bg1);
@@ -501,6 +506,12 @@ textarea {
     font: inherit;
     resize: vertical;
 }
+/* the message box can be dragged taller, but only so far (about 8 lines); longer text
+   scrolls inside it instead of pushing the messages out of the card */
+#board-text {
+    min-height: 3.5em;
+    max-height: 10em;
+}
 #board-form input,
 #board-form textarea {
     background: var(--bg);
@@ -771,30 +782,26 @@ a.author:hover {
     line-height: 1.1;
 }
 
-/* small cams (London's low-res TfL clip): the clip's own shape, not stretched to full width */
-.cam-stage.clip {
-    aspect-ratio: 352 / 288;
-    width: 577px; /* same height as the 16:9 cams (840px wide) */
-    max-width: 100%; /* never wider than the screen on phones */
-    margin: 0 auto;
-}
+/* London's nearly square clip: the area stays 16:9 like the other cams (so the card doesn't
+   change height), and the clip sits centred inside it, on the area's own background */
 .cam-stage.clip video {
-    background: none; /* no black bars needed: the box is the clip's shape */
+    background: none;
 }
 
-/* cams (840px video) on the left, the message board filling the rest, same height */
+/* cams and the message board on the same 3 columns as the count-ups above (same gap too),
+   cams taking two, so their edges line up with the count-up cards */
 .duo {
     display: grid;
-    grid-template-columns: 796px 1fr; /* 840px video + the card's padding and border */
+    grid-template-columns: repeat(3, 1fr);
     gap: 14px;
     margin-top: 14px;
+}
+.duo .cams {
+    grid-column: span 2;
 }
 .duo .cams,
 .duo .board-card {
     margin-top: 0;
-}
-.duo .cam-stage {
-    max-width: 840px;
 }
 /* the board is exactly as tall as the cams card: its own content doesn't count towards
    the row height (contain: size), and the message list scrolls inside it */
@@ -815,11 +822,8 @@ a.author:hover {
     .games {
         grid-template-columns: 1fr;
     }
-    .duo .cam-stage {
-        max-width: none; /* no cap: on phones it reaches past the card padding to the screen edges */
-    }
-    .duo .cam-stage.clip {
-        max-width: 100%; /* London's clip box: centred, never wider than the card */
+    .duo .cams {
+        grid-column: auto; /* one column now, no spanning */
     }
     .duo .board-card {
         contain: none; /* stacked under the cams, it needs its own height again */
