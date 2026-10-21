@@ -130,26 +130,26 @@
 
 td button {
     margin: 3px 2px;
-    white-space: nowrap; /* keep each button's label on one line */
+    white-space: nowrap;
 }
 
 html {
     background: var(--bg);
 }
-/* no box around the page: content just sits on the background, like YoshiTracker */
+
 body {
-    max-width: 1000px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 22px 20px 60px;
     background-image: radial-gradient(
         1100px 480px at 50% -8%,
         rgba(250, 189, 47, 0.05),
         transparent 70%
-    ); /* faint yellow glow at the top */
+    );
     color: var(--fg);
     font-family: "Fira Sans";
 }
-/* page title with a thin line under it */
+
 h1 {
     margin: 0 0 16px;
     padding-bottom: 12px;
@@ -206,25 +206,27 @@ button:hover {
     border-color: var(--fg);
 }
 /* As many 260px-or-wider columns as fit; 1 column on phones */
+/* auto-fit (not auto-fill): with fewer cards than columns, the empty columns
+   are dropped and the cards stretch to fill the row */
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 14px;
 }
 
 .card {
-    background: var(--bg1); /* a shade lighter than the page */
+    background: var(--bg1);
     border: 1px solid var(--line);
-    border-radius: 12px; /* rounded corners; 0 for sharp gruvbox-style edges */
+    border-radius: 12px;
     padding: 14px 18px;
-    min-width: 0; /* lets long content shrink instead of stretching the grid */
+    min-width: 0;
 }
 
 .card h2 {
     margin: 0 0 10px;
     font-size: 15px;
     font-weight: 600;
-    letter-spacing: 0.05em; /* coloured, slightly spaced titles like YoshiTracker */
+    letter-spacing: 0.05em;
     color: var(--yellow);
 }
 
@@ -232,17 +234,16 @@ button:hover {
     font-size: 1.4em;
     margin: 6px 0;
 }
-/* buttons at the bottom of each card, wrapping neatly with even gaps */
+
 .actions {
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
     margin-top: 10px;
     padding-top: 10px;
-    border-top: 1px solid var(--line); /* separates controls from the info above */
+    border-top: 1px solid var(--line);
 }
 
-/* Delete stands out so you don't hit it by accident */
 button.danger {
     color: var(--red);
 }
@@ -250,7 +251,6 @@ button.danger:hover {
     border-color: var(--red);
 }
 
-/* the Add form and the login box look like cards too */
 #add,
 #login {
     display: flex;
@@ -266,16 +266,14 @@ button.danger:hover {
 #login input {
     flex: 1;
     min-width: 140px;
-} /* fields share the width, wrap on phones */
+}
 
-/* paused cards dimmed slightly so they're easy to spot */
 .card.paused {
     opacity: 0.75;
 }
 
-/* cams: one full-width card with a pill per city, like YoshiTracker */
 .cams {
-    margin-top: 14px; /* same gap as between cards */
+    margin-top: 14px;
 }
 .filters {
     display: flex;
@@ -286,7 +284,7 @@ button.danger:hover {
 .filters button {
     font-size: 12px;
     padding: 4px 11px;
-    border-radius: 999px; /* pill shape */
+    border-radius: 999px;
     background: transparent;
     color: var(--muted);
     cursor: pointer;
@@ -294,16 +292,16 @@ button.danger:hover {
 .filters button.on {
     background: var(--yellow);
     border-color: var(--yellow);
-    color: var(--bg); /* dark text on the yellow pill */
+    color: var(--bg);
 }
-/* 16:9 box the video (or the "no cam" message) sits in */
+
 .cam-stage {
     position: relative;
     aspect-ratio: 16 / 9;
     border: 1px solid var(--line);
     border-radius: 8px;
     background: var(--bg);
-    overflow: hidden; /* clip the video to the rounded corners */
+    overflow: hidden;
 }
 .cam-stage iframe {
     display: block;
@@ -315,7 +313,7 @@ button.danger:hover {
     position: absolute;
     inset: 0;
     display: flex;
-    flex-direction: column; /* doge above the message */
+    flex-direction: column;
     gap: 12px;
     align-items: center;
     justify-content: center;
@@ -323,11 +321,11 @@ button.danger:hover {
     text-align: center;
     color: var(--muted);
 }
-/* the doge icon, drawn as a mask so it takes the text colour */
+
 .doge {
     width: 64px;
     height: 64px;
-    background: currentColor; /* same colour as the message under it */
+    background: currentColor;
     mask: url(doge.svg) center / contain no-repeat;
 }
 .cam-credit {
@@ -342,33 +340,32 @@ button.danger:hover {
 .note {
     margin: 0 0 12px;
     font-size: 0.9em;
-    color: var(--muted); /* the grey used for small text; --fg is the main text colour */
+    color: var(--muted);
 }
 
-/* 2048 card */
-/* 2048 and live chess: two equal columns, one column on narrow screens */
+/* 2048 */
 .games {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 14px;
     margin-top: 14px;
 }
-/* both cards stack their parts top to bottom, so the hints can sit at the bottom */
+
 .game,
 .chess {
     display: flex;
     flex-direction: column;
 }
 .games .game-hint {
-    margin-top: auto; /* pushed to the bottom of the card, level in both cards */
+    margin-top: auto;
     padding-top: 10px;
 }
 .chess iframe {
     display: block;
     width: 100%;
-    max-width: 340px; /* same width as the 2048 board */
-    margin: auto; /* centred, also vertically in the space above the hint */
-    aspect-ratio: 10 / 11; /* board plus the player names Lichess shows */
+    max-width: 340px;
+    margin: auto;
+    aspect-ratio: 10 / 11;
     border: 0;
 }
 .game-hint a {
@@ -387,7 +384,7 @@ button.danger:hover {
     font-variant-numeric: tabular-nums;
 }
 .game-bar button {
-    margin-left: auto; /* pushed to the right */
+    margin-left: auto;
 }
 .board {
     display: grid;
@@ -395,16 +392,16 @@ button.danger:hover {
     gap: 8px;
     max-width: 340px;
     width: 100%;
-    box-sizing: border-box; /* 340px including the padding, same as the chess board */
+    box-sizing: border-box;
     margin: 0 auto;
     padding: 8px;
     border-radius: 8px;
     background: var(--bg);
-    touch-action: none; /* swipes move tiles instead of scrolling the page */
+    touch-action: none;
     outline: none;
 }
 .board:focus {
-    box-shadow: 0 0 0 2px var(--yellow); /* shows the arrow keys go to the game */
+    box-shadow: 0 0 0 2px var(--yellow);
 }
 .tile {
     aspect-ratio: 1;
@@ -412,7 +409,7 @@ button.danger:hover {
     align-items: center;
     justify-content: center;
     border-radius: 6px;
-    background: var(--bg1); /* empty cell */
+    background: var(--bg1);
     font-size: 1.5em;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
@@ -425,7 +422,8 @@ button.danger:hover {
         transform: scale(0.6);
     }
 }
-/* gruvbox colours, getting warmer as the numbers grow */
+
+/* gruvbox */
 .tile[data-v="2"] {
     background: #504945;
 }
@@ -465,7 +463,7 @@ button.danger:hover {
     font-size: 1.1em;
 }
 .game-status {
-    min-height: 1.2em; /* keeps the card from jumping when a message appears */
+    min-height: 1.2em;
     margin: 10px 0 0;
     text-align: center;
     color: var(--yellow);
@@ -487,7 +485,7 @@ button.danger:hover {
     gap: 8px;
 }
 #board-form button {
-    align-self: flex-end; /* post button on the right */
+    align-self: flex-end;
 }
 textarea {
     background: var(--bg1);
@@ -500,11 +498,9 @@ textarea {
 }
 #board-form input,
 #board-form textarea {
-    background: var(
-        --bg
-    ); /* a shade darker than the card, so the fields stand out */
+    background: var(--bg);
 }
-/* off-screen instead of display: none, which some bots know to skip */
+/* bots */
 .honeypot {
     position: absolute;
     left: -9999px;
@@ -515,7 +511,7 @@ textarea {
     border: 1px dashed var(--line);
     border-radius: 6px;
     color: var(--muted);
-    font-variant-numeric: tabular-nums; /* the countdown digits don't jiggle */
+    font-variant-numeric: tabular-nums;
 }
 .board-error {
     margin: 6px 0 0;
@@ -540,8 +536,8 @@ textarea {
 }
 .board-text {
     margin-top: 4px;
-    white-space: pre-wrap; /* keep line breaks people typed */
-    overflow-wrap: anywhere; /* long links don't stretch the card */
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
 }
 .board-empty {
     margin: 0;
@@ -551,20 +547,20 @@ textarea {
     margin-top: 6px;
 }
 
-/* phones: give the cams as much width as possible */
+/* for phone */
 @media (max-width: 600px) {
     body {
-        padding: 14px 10px 40px; /* less empty space at the screen edges */
+        padding: 14px 10px 40px;
     }
     .cams {
-        margin-left: -10px; /* run the cams card to the screen edges (cancels the body padding) */
+        margin-left: -10px;
         margin-right: -10px;
         border-left: 0;
         border-right: 0;
         border-radius: 0;
     }
     .cam-stage {
-        margin: 0 -18px; /* run the video to the card's edges (cancels the card padding) */
+        margin: 0 -18px;
         border-left: 0;
         border-right: 0;
         border-radius: 0;
