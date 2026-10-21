@@ -1,5 +1,6 @@
 // A small 2048: slide tiles with the arrow keys (after clicking the board) or by swiping.
-// Everything runs in the browser; the best score is kept in localStorage.
+// The game runs in the browser; the best score is kept in localStorage and sent to the
+// server for the leaderboard. Uses esc() from shared.js.
 
 (() => {
     const SIZE = 4;
@@ -86,13 +87,17 @@
         if (score > best) {
             best = score;
             localStorage.setItem("g2048-best", best);
+            sendBestSoon();
         }
         let status = "";
         if (!won && cells.includes(2048)) {
             won = true;
             status = "2048! keep going if you like";
         }
-        if (!canMove()) status = "no moves left";
+        if (!canMove()) {
+            status = "no moves left";
+            sendBest(); // don't wait: they may leave now
+        }
         render(status);
     }
 
@@ -145,5 +150,57 @@
         board.focus();
     });
 
+    // ---------- leaderboard ----------
+
+    const leaderboardEl = document.getElementById("g2048-leaderboard");
+    let sendTimer = null;
+
+    function drawLeaderboard(rows) {
+        leaderboardEl.innerHTML =
+            rows
+                .map(
+                    (r) => `
+              <li>
+                <span class="lb-name">${
+                    r.poster_id
+                        ? `<a class="author" href="/diary/${encodeURIComponent(r.name)}">${esc(r.name)}</a>`
+                        : esc(r.name)
+                }</span>
+                <span class="lb-score">${r.score.toLocaleString()}</span>
+              </li>`,
+                )
+                .join("") || `<li class="board-empty">no scores yet</li>`;
+    }
+
+    async function loadLeaderboard() {
+        drawLeaderboard(await (await fetch("/api/2048/leaderboard")).json());
+    }
+
+    // Send the best score; the server keeps whichever is higher. The name is the one
+    // remembered from the message board, or the diary writer's own when logged in.
+    async function sendBest() {
+        clearTimeout(sendTimer);
+        if (!best) return;
+        const session = localStorage.getItem("session");
+        const res = await fetch("/api/2048/score", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                ...(session ? { "X-Session": session } : {}),
+            },
+            body: JSON.stringify({ score: best, name: localStorage.getItem("name") || "" }),
+        });
+        if (res.ok) drawLeaderboard(await res.json());
+    }
+
+    // While a new best keeps climbing, send it once things settle for a few seconds
+    function sendBestSoon() {
+        clearTimeout(sendTimer);
+        sendTimer = setTimeout(sendBest, 3000);
+    }
+
     newGame();
+    if (best) sendBest(); // a best from before the leaderboard existed
+    else loadLeaderboard();
+    setInterval(loadLeaderboard, 60000);
 })();

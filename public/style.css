@@ -351,7 +351,7 @@ button.danger:hover {
 /* 2048 */
 .games {
     display: grid;
-    grid-template-columns: 1fr 1fr; /* 2048 and chess, half each */
+    grid-template-columns: 1fr 1fr 1fr; /* 2048 | leaderboard | chess, a third each */
     gap: 14px;
     margin-top: 14px;
 }
@@ -828,4 +828,40 @@ a.author:hover {
         flex: none; /* back to its natural height, or it would collapse to nothing */
         max-height: 400px;
     }
+}
+
+/* 2048 leaderboard, between 2048 and chess */
+.leaderboard {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    counter-reset: place;
+}
+.leaderboard li {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    padding: 6px 0;
+    border-top: 1px solid var(--line);
+    counter-increment: place;
+}
+.leaderboard li:first-child {
+    border-top: 0;
+}
+.leaderboard li:not(.board-empty)::before {
+    content: counter(place) ".";
+    min-width: 1.6em;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+}
+.leaderboard li:nth-child(1)::before {
+    color: var(--yellow); /* first place */
+}
+.lb-name {
+    flex: 1;
+    overflow-wrap: anywhere;
+}
+.lb-score {
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
 }

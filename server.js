@@ -445,6 +445,51 @@ app.post("/api/posts", async (req, res) => {
   res.json({ posts: diaryPosts(poster.id), nextDiaryPostAt: nextDiaryPostAt(poster.id) });
 });
 
+// ---------- 2048 leaderboard ----------
+// Everyone's best 2048 score: one row per visitor (their IP, or their account when a
+// diary writer is logged in, the same as the post limits), only ever going up.
+// The game runs in the browser, so a score can't be proven real; the server only
+// rejects impossible ones.
+db.exec(`
+  CREATE TABLE IF NOT EXISTS scores_2048 (
+    who        TEXT PRIMARY KEY, -- see limitKey
+    name       TEXT NOT NULL,
+    poster_id  INTEGER,          -- set when it's a diary writer's score
+    score      INTEGER NOT NULL,
+    updated_at INTEGER NOT NULL
+  )
+`);
+const MAX_2048_SCORE = 3932100; // the highest score a game of 2048 can reach
+
+const leaderboard = () =>
+  db
+    .prepare("SELECT name, score, poster_id FROM scores_2048 ORDER BY score DESC, updated_at LIMIT 10")
+    .all();
+
+app.get("/api/2048/leaderboard", (req, res) => {
+  res.json(leaderboard());
+});
+
+app.post("/api/2048/score", (req, res) => {
+  const score = Number(req.body?.score);
+  if (!Number.isInteger(score) || score <= 0 || score > MAX_2048_SCORE || score % 2)
+    return res.status(400).json({ error: "That's not a 2048 score" });
+
+  // Their name: a diary writer's own name, else the name they use on the board,
+  // else "anonymous" (also when they've typed a diary writer's name)
+  const author = authorOf(req, req.body?.name);
+  const name = (!author.error && author.name) || "anonymous";
+  const who = limitKey(req, "2048");
+  db.prepare(
+    `INSERT INTO scores_2048 (who, name, poster_id, score, updated_at) VALUES (?, ?, ?, ?, ?)
+       ON CONFLICT (who) DO UPDATE SET
+         name = excluded.name, poster_id = excluded.poster_id,
+         score = MAX(score, excluded.score),
+         updated_at = IIF(excluded.score > score, excluded.updated_at, updated_at)`,
+  ).run(who, name, author.posterId ?? null, score, Date.now());
+  res.json(leaderboard());
+});
+
 // ---------- admin: every route below needs the password ----------
 
 app.use("/api/admin", (req, res, next) => {
