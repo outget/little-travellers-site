@@ -736,3 +736,50 @@ a.author:hover {
     padding: 24px 0;
     color: var(--muted);
 }
+
+/* main page top: count-ups, with the diary picker as a narrow column on the right */
+.top {
+    display: grid;
+    grid-template-columns: 1fr 180px;
+    gap: 14px; /* the diaries card stretches to the count-ups' full height */
+}
+.top:has(#diaries[hidden]) {
+    grid-template-columns: 1fr; /* no diaries yet: count-ups use the full width */
+}
+.top .diary-links {
+    margin-top: 0;
+}
+.top .diary-links .filters {
+    flex-direction: column; /* one diary per line */
+}
+.top .diary-links a {
+    text-align: center;
+}
+/* phones: the picker goes under the count-ups, links back side by side */
+@media (max-width: 600px) {
+    .top {
+        grid-template-columns: 1fr;
+    }
+    .top .diary-links .filters {
+        flex-direction: row;
+    }
+}
+/* count-up cards: name and location at the top, the count-up and message at the bottom,
+   so they line up across cards of different heights */
+.top #list .card {
+    display: flex;
+    flex-direction: column;
+    container-type: inline-size; /* lets the count-up size itself to the card's width */
+}
+/* message, count-up and "since" date, grouped at the bottom of the card */
+.top #list .card-bottom {
+    margin-top: auto;
+    padding-top: 6px; /* keeps a gap above it on the tallest card */
+}
+.top #list .card .time {
+    /* the count-up is the point of the card, so make it big, but never wider than the card
+       (12cqi = 12% of the card's width) */
+    font-size: min(2.1em, 12cqi);
+    line-height: 1.1;
+}
+

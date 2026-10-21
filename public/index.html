@@ -17,11 +17,14 @@
     <body>
         <a class="admin-link" href="/admin">admin</a>
         <h1>travellers</h1>
-        <div id="list" class="grid"></div>
+        <!-- count-ups, with the diary picker in a narrow column beside them -->
+        <div class="top">
+            <div id="list" class="grid"></div>
 
-        <div class="card diary-links" id="diaries" hidden>
-            <h2>diaries</h2>
-            <div class="filters" id="diary-list"></div>
+            <div class="card diary-links" id="diaries" hidden>
+                <h2>diaries</h2>
+                <div class="filters" id="diary-list"></div>
+            </div>
         </div>
 
         <div class="card cams">
@@ -141,8 +144,11 @@
                   <div class="card ${t.paused_at ? "paused" : ""}">
                     <h2>${esc(t.name)}</h2>
                     ${t.location ? `<div class="since">📍 ${esc(t.location)}</div>` : ""}
-                    <div class="time" id="time-${t.id}">${elapsed(t)}</div>
-                    ${messageHtml(t)}
+                    <div class="card-bottom">
+                      ${messageHtml(t)}
+                      <div class="time" id="time-${t.id}">${elapsed(t)}</div>
+                      <div class="since started">since ${new Date(t.started_at).toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" })}</div>
+                    </div>
                   </div>
                 `,
                     )
