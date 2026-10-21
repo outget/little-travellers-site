@@ -727,3 +727,12 @@ a.author:hover {
 .post-wait {
     margin-bottom: 14px;
 }
+/* "wow, such empty" with the doge, for an empty message board or diary */
+.empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 24px 0;
+    color: var(--muted);
+}

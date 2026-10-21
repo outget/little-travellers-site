@@ -22,7 +22,7 @@
                 </div>`,
                   )
                   .join("")
-            : `<p class="board-empty">no messages yet, be the first</p>`;
+            : `<div class="empty"><span class="doge" aria-hidden="true"></span>wow, such empty</div>`;
         countdown();
     }
 
