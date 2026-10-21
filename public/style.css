@@ -566,3 +566,164 @@ textarea {
         border-radius: 0;
     }
 }
+
+/* diaries */
+.diary-posts {
+    align-items: start; /* a short post doesn't stretch to match a tall photo post */
+}
+.post {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.post > button {
+    align-self: flex-start;
+}
+.post-image {
+    display: block;
+    width: 100%;
+    border-radius: 6px;
+}
+.comments {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+}
+.comment .board-text {
+    margin-top: 2px;
+    font-size: 0.95em;
+}
+.comment-form {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.comment-form button {
+    align-self: flex-end;
+}
+.comment-wait {
+    font-size: 0.85em;
+}
+/* text-only buttons: "comment", "poster login", "log out" */
+.link-button {
+    align-self: flex-start;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font-size: 0.85em;
+    cursor: pointer;
+    text-decoration: underline dotted;
+}
+.link-button:hover {
+    color: var(--fg);
+}
+.link-button.danger {
+    margin-left: 6px;
+}
+.compose {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+}
+.compose textarea {
+    background: var(--bg);
+}
+.compose-preview {
+    max-width: 240px;
+    border-radius: 6px;
+}
+.compose-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+.compose-bar #post-send {
+    margin-left: auto; /* post button on the right */
+}
+.compose-status {
+    color: var(--muted);
+    font-size: 0.85em;
+}
+/* the file picker, dressed up as one of our buttons */
+.file-button {
+    background: var(--bg);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    padding: 4px 10px;
+    cursor: pointer;
+}
+.file-button:hover {
+    border-color: var(--fg);
+}
+.poster-login {
+    margin-top: 30px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.9em;
+}
+.login-card {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    max-width: 420px;
+    margin: 10px auto 0;
+}
+.login-card input {
+    flex: 1;
+    min-width: 140px;
+}
+.login-card .board-error {
+    width: 100%;
+}
+/* links to the diaries on the main page */
+.diary-links {
+    margin-top: 14px;
+}
+.diary-links .filters {
+    margin-bottom: 0;
+}
+.diary-links a {
+    padding: 4px 12px;
+    border: 1px solid var(--line);
+    border-radius: 999px; /* pill, like the cam buttons */
+    color: var(--fg);
+    text-decoration: none;
+}
+.diary-links a:hover {
+    border-color: var(--yellow);
+    color: var(--yellow);
+}
+.poster-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+.poster-form input {
+    flex: 1;
+    min-width: 140px;
+}
+/* "posting as anna" / "commenting as anna" for a logged-in diary writer */
+.posting-as {
+    margin: 0;
+    font-size: 0.85em;
+    color: var(--muted);
+}
+.posting-as b {
+    color: var(--yellow);
+}
+/* diary writers' names link to their diary */
+a.author {
+    text-decoration: none;
+}
+a.author:hover {
+    text-decoration: underline;
+}
+.post-wait {
+    margin-bottom: 14px;
+}

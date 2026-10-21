@@ -19,6 +19,11 @@
         <h1>travellers</h1>
         <div id="list" class="grid"></div>
 
+        <div class="card diary-links" id="diaries" hidden>
+            <h2>diaries</h2>
+            <div class="filters" id="diary-list"></div>
+        </div>
+
         <div class="card cams">
             <h2>cams</h2>
             <div class="filters" id="cam-filters"></div>
@@ -83,11 +88,14 @@
         </div>
 
         <div class="card board-card">
-            <h2>message board</h2>
+            <h2>general message board</h2>
             <p class="note">
                 we miss our travellers dearly, write them a message here :)
             </p>
             <form id="board-form">
+                <p class="posting-as" id="board-as" hidden>
+                    posting as <b id="board-as-name"></b>
+                </p>
                 <input
                     id="board-name"
                     placeholder="name"
@@ -211,7 +219,21 @@
                 if (frame.getAttribute("src") !== next) frame.src = next;
             }
 
+            // Links to each diary; the card stays hidden until the admin adds a poster
+            async function loadDiaries() {
+                const res = await fetch("/api/diaries");
+                const diaries = await res.json();
+                document.getElementById("diaries").hidden = !diaries.length;
+                document.getElementById("diary-list").innerHTML = diaries
+                    .map(
+                        (d) =>
+                            `<a href="/diary/${encodeURIComponent(d.username)}">${esc(d.username)}</a>`,
+                    )
+                    .join("");
+            }
+
             load();
+            loadDiaries();
             showCam(currentCam);
             // re-check the current cam now and then, e.g. Bucharest moving to a new stream
             setInterval(() => showCam(currentCam), 10 * 60 * 1000);

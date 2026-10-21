@@ -39,6 +39,17 @@
                 <h2>message board</h2>
                 <div class="board-list" id="board-list"></div>
             </div>
+            <div class="card board-card">
+                <h2>diaries</h2>
+                <p class="note" id="disk-use"></p>
+                <div class="board-list" id="poster-list"></div>
+                <form id="add-poster" class="poster-form">
+                    <input id="poster-username" placeholder="username" required />
+                    <input id="poster-password" type="password" placeholder="password (8+ characters)" required />
+                    <button>add diary</button>
+                </form>
+                <p class="board-error" id="poster-error"></p>
+            </div>
             <p><a href="/">View public page</a></p>
         </div>
 
@@ -75,6 +86,7 @@
                 timers = await res.json();
                 draw();
                 loadMessages();
+                loadPosters();
             }
 
             // ---------- message board ----------
@@ -97,6 +109,68 @@
                         )
                         .join("") || `<p class="board-empty">no messages</p>`;
             }
+
+            // ---------- diaries ----------
+
+            // Admin requests that aren't about timers (the api() helper above is for those)
+            function adminFetch(method, path, body) {
+                return fetch("/api/admin/" + path, {
+                    method,
+                    headers: { "Content-Type": "application/json", "X-Password": password },
+                    body: JSON.stringify(body),
+                });
+            }
+
+            async function loadPosters() {
+                const res = await adminFetch("GET", "posters");
+                if (!res.ok) return;
+                const { posters, imageBytes, freeBytes } = await res.json();
+                document.getElementById("disk-use").textContent =
+                    `photos use ${(imageBytes / 1e6).toFixed(1)} MB · ${(freeBytes / 1e9).toFixed(1)} GB free on the server`;
+                document.getElementById("poster-list").innerHTML =
+                    posters
+                        .map(
+                            (p) => `
+                <div class="board-msg">
+                  <div class="board-meta"><b>${esc(p.username)}</b> · ${p.posts} posts ·
+                    <a href="/diary/${encodeURIComponent(p.username)}">open diary</a></div>
+                  <button onclick="setPosterPassword(${p.id})">New password</button>
+                  <button class="danger" onclick="removePoster(${p.id})">Delete</button>
+                </div>`,
+                        )
+                        .join("") || `<p class="board-empty">no diaries yet</p>`;
+            }
+
+            async function posterResult(res) {
+                const data = await res.json();
+                document.getElementById("poster-error").textContent = res.ok ? "" : data.error;
+                if (res.ok) loadPosters();
+                return res.ok;
+            }
+
+            function setPosterPassword(id) {
+                const newPassword = prompt("New password (8+ characters):");
+                if (newPassword)
+                    adminFetch("POST", `posters/${id}/password`, { password: newPassword }).then(posterResult);
+            }
+
+            function removePoster(id) {
+                if (confirm("Delete this person and their whole diary, with all photos and comments?"))
+                    adminFetch("DELETE", "posters/" + id).then(posterResult);
+            }
+
+            document.getElementById("add-poster").onsubmit = async (e) => {
+                e.preventDefault();
+                const username = document.getElementById("poster-username");
+                const posterPassword = document.getElementById("poster-password");
+                const ok = await posterResult(
+                    await adminFetch("POST", "posters", {
+                        username: username.value,
+                        password: posterPassword.value,
+                    }),
+                );
+                if (ok) username.value = posterPassword.value = "";
+            };
 
             async function removeMessage(id) {
                 if (!confirm("Delete this message?")) return;

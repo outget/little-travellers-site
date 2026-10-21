@@ -6,6 +6,8 @@
     const wait = document.getElementById("board-wait");
     const error = document.getElementById("board-error");
     let nextPostAt = 0; // from the server: when this visitor can post again (0 = now)
+    const session = localStorage.getItem("session"); // set when a diary writer logs in
+    const sessionHeader = session ? { "X-Session": session } : {};
 
     // Draw what the server sent back (every board route answers in this shape)
     function show(data) {
@@ -15,13 +17,20 @@
                   .map(
                       (m) => `
                 <div class="board-msg">
-                  <div class="board-meta"><b>${esc(m.name)}</b> · ${ago(m.created_at)}</div>
+                  <div class="board-meta">${authorHtml(m)} · ${ago(m.created_at)}</div>
                   <div class="board-text">${esc(m.text)}</div>
                 </div>`,
                   )
                   .join("")
             : `<p class="board-empty">no messages yet, be the first</p>`;
         countdown();
+    }
+
+    // Diary writers' names link to their diary
+    function authorHtml(m) {
+        return m.poster_id
+            ? `<a class="author" href="/diary/${encodeURIComponent(m.name)}"><b>${esc(m.name)}</b></a>`
+            : `<b>${esc(m.name)}</b>`;
     }
 
     // "just now", "5m ago", "3h ago", "2d ago"
@@ -46,16 +55,19 @@
     }
 
     async function load() {
-        const res = await fetch("/api/messages");
+        const res = await fetch("/api/messages", { headers: sessionHeader });
         show(await res.json());
     }
 
     form.onsubmit = async (e) => {
         e.preventDefault(); // stop the browser reloading the page
         error.textContent = "";
+        // remembered for next time (diary comments use the same name)
+        if (!document.getElementById("board-name").hidden)
+            localStorage.setItem("name", document.getElementById("board-name").value);
         const res = await fetch("/api/messages", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", ...sessionHeader },
             body: JSON.stringify({
                 name: document.getElementById("board-name").value,
                 text: document.getElementById("board-text").value,
@@ -69,6 +81,20 @@
         show(data);
     };
 
+    // A logged-in diary writer posts as themselves: no name field
+    async function checkLogin() {
+        const nameField = document.getElementById("board-name");
+        nameField.value = localStorage.getItem("name") || "";
+        if (!session) return;
+        const res = await fetch("/api/me", { headers: sessionHeader });
+        if (!res.ok) return;
+        nameField.hidden = true;
+        nameField.required = false;
+        document.getElementById("board-as").hidden = false;
+        document.getElementById("board-as-name").textContent = (await res.json()).username;
+    }
+
+    checkLogin();
     load();
     setInterval(load, 15000); // pick up other people's messages
     setInterval(countdown, 1000);

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>diary</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Fira+Sans:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+            rel="stylesheet"
+        />
+        <link rel="icon" type="image/png" href="/site-icon.png" />
+        <link rel="apple-touch-icon" href="/site-icon.png" />
+        <link rel="stylesheet" href="/style.css" />
+    </head>
+    <body>
+        <a class="admin-link" href="/">← travellers</a>
+        <h1 id="diary-title">diary</h1>
+
+        <!-- only shown to the diary's owner while logged in -->
+        <form class="card compose" id="compose" hidden>
+            <textarea id="post-text" placeholder="write something" rows="4" maxlength="5000"></textarea>
+            <img class="compose-preview" id="post-preview" alt="" hidden />
+            <div class="compose-bar">
+                <label class="file-button">
+                    add photo
+                    <input id="post-image" type="file" accept="image/*" hidden />
+                </label>
+                <button type="button" id="post-image-remove" hidden>remove photo</button>
+                <span class="compose-status" id="post-status"></span>
+                <button id="post-send">post</button>
+            </div>
+        </form>
+
+        <p class="board-wait post-wait" id="post-wait" hidden></p>
+
+        <div class="grid diary-posts" id="posts"></div>
+        <p class="board-empty" id="no-posts" hidden>nothing here yet</p>
+
+        <div class="poster-login">
+            <span id="logged-in" hidden>
+                logged in as <b id="logged-in-name"></b> ·
+                <button type="button" class="link-button" id="logout">log out</button>
+            </span>
+            <button type="button" class="link-button" id="show-login">poster login</button>
+            <form class="card login-card" id="login" hidden>
+                <input id="login-username" placeholder="username" autocomplete="username" required />
+                <input
+                    id="login-password"
+                    type="password"
+                    placeholder="password"
+                    autocomplete="current-password"
+                    required
+                />
+                <button>log in</button>
+                <p class="board-error" id="login-error"></p>
+            </form>
+        </div>
+
+        <script src="/shared.js"></script>
+        <script src="/diary.js"></script>
+    </body>
+</html>
