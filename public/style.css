@@ -785,7 +785,7 @@ a.author:hover {
 /* cams (840px video) on the left, the message board filling the rest, same height */
 .duo {
     display: grid;
-    grid-template-columns: 876px 1fr; /* 840px video + the card's padding and border */
+    grid-template-columns: 796px 1fr; /* 840px video + the card's padding and border */
     gap: 14px;
     margin-top: 14px;
 }
