@@ -240,27 +240,38 @@ app.get("/api/timers", (req, res) => {
   res.json(allTimers());
 });
 
-// The Bucharest webcam restarts its YouTube stream every few hours with a new video ID,
-// and YouTube's "channel live stream" embed shows "video unavailable", so look up the
-// current video ourselves. Cached for 10 minutes so we don't ask YouTube on every visit.
+// The Bucharest webcam (Piața Obor, the closest live cam to Strada Siriului) restarts its
+// YouTube stream every few hours with a new video ID, and its channel runs other cams too,
+// so look through the channel's streams for the live one titled "Obor".
+// Cached for 10 minutes so we don't ask YouTube on every visit.
 const BUCHAREST_CHANNEL = "UCE5jk2omKe23EUKPJtHlzEg";
+const BUCHAREST_TITLE = /obor/i;
 let bucharestLive = { videoId: null, checkedAt: 0 };
 
 app.get("/api/bucharest-live", async (req, res) => {
   if (Date.now() - bucharestLive.checkedAt > 10 * 60 * 1000) {
     try {
       const page = await fetch(
-        `https://www.youtube.com/channel/${BUCHAREST_CHANNEL}/live`,
+        `https://www.youtube.com/channel/${BUCHAREST_CHANNEL}/streams`,
         { headers: { "Accept-Language": "en", Cookie: "SOCS=CAI" } }, // SOCS skips the EU cookie-consent page
       );
       const html = await page.text();
-      // While live, the page's canonical link points at the current stream's video
-      const videoId = html.match(
-        /<link rel="canonical" href="https:\/\/www\.youtube\.com\/watch\?v=([\w-]{11})"/,
-      )?.[1];
+      // The page carries its video list as JSON; each video is a "richItemRenderer",
+      // and ones streaming right now have the LIVE thumbnail badge
+      const data = JSON.parse(html.split("var ytInitialData = ")[1].split(";</script>")[0]);
+      const videos = [];
+      (function collect(node) {
+        if (!node || typeof node !== "object") return;
+        if (node.richItemRenderer) return videos.push(JSON.stringify(node.richItemRenderer));
+        for (const key in node) collect(node[key]);
+      })(data);
+      const live = videos.find(
+        (v) => v.includes("THUMBNAIL_OVERLAY_BADGE_STYLE_LIVE") && BUCHAREST_TITLE.test(v),
+      );
+      const videoId = live?.match(/"videoId":"([\w-]{11})"/)?.[1];
       bucharestLive = { videoId: videoId ?? null, checkedAt: Date.now() };
     } catch {
-      // YouTube unreachable: keep the last known video and try again next time
+      // YouTube unreachable or the page changed: keep the last known video, try again later
     }
   }
   res.json({ videoId: bucharestLive.videoId });

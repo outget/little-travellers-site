@@ -17,37 +17,76 @@
     <body>
         <a class="admin-link" href="/admin">admin</a>
         <h1>travellers</h1>
-        <!-- count-ups, with the diary picker in a narrow column beside them -->
-        <div class="top">
-            <div id="list" class="grid"></div>
-
-            <div class="card diary-links" id="diaries" hidden>
-                <h2>diaries</h2>
-                <div class="filters" id="diary-list"></div>
-            </div>
+        <!-- diary picker: one row of links above the count-ups -->
+        <div class="card diary-links" id="diaries" hidden>
+            <h2>diaries</h2>
+            <div class="filters" id="diary-list"></div>
         </div>
 
-        <div class="card cams">
-            <h2>cams</h2>
-            <div class="filters" id="cam-filters"></div>
-            <div class="cam-stage">
-                <iframe
-                    id="cam-frame"
-                    allow="
-                        autoplay;
-                        encrypted-media;
-                        fullscreen;
-                        picture-in-picture;
-                    "
-                    allowfullscreen
-                    title="Webcam"
-                ></iframe>
-                <div class="cam-note" id="cam-note" hidden>
-                    <span class="doge" aria-hidden="true"></span>
-                    <span id="cam-note-text"></span>
+        <div id="list" class="grid countups"></div>
+
+        <!-- cams and the message board side by side (stacked on phones) -->
+        <div class="duo">
+            <div class="card cams">
+                <h2>cams</h2>
+                <div class="filters" id="cam-filters"></div>
+                <div class="cam-stage">
+                    <iframe
+                        id="cam-frame"
+                        allow="
+                            autoplay;
+                            encrypted-media;
+                            fullscreen;
+                            picture-in-picture;
+                        "
+                        allowfullscreen
+                        title="Webcam"
+                    ></iframe>
+                    <video id="cam-video" muted autoplay loop playsinline hidden></video>
+                    <div class="cam-note" id="cam-note" hidden>
+                        <span class="doge" aria-hidden="true"></span>
+                        <span id="cam-note-text"></span>
+                    </div>
                 </div>
+                <p class="cam-credit" id="cam-credit"></p>
             </div>
-            <p class="cam-credit" id="cam-credit"></p>
+
+            <div class="card board-card">
+                <h2>general message board</h2>
+                <p class="note">
+                    we miss our travellers dearly, write them a message here :)
+                </p>
+                <form id="board-form">
+                    <p class="posting-as" id="board-as" hidden>
+                        posting as <b id="board-as-name"></b>
+                    </p>
+                    <input
+                        id="board-name"
+                        placeholder="name"
+                        maxlength="30"
+                        required
+                    />
+                    <textarea
+                        id="board-text"
+                        placeholder="say something (one message a day)"
+                        maxlength="500"
+                        rows="3"
+                        required
+                    ></textarea>
+                    <!-- honeypot: hidden from people, bots fill it in and get ignored -->
+                    <input
+                        id="board-website"
+                        class="honeypot"
+                        tabindex="-1"
+                        autocomplete="off"
+                        aria-hidden="true"
+                    />
+                    <button>post</button>
+                </form>
+                <p class="board-wait" id="board-wait" hidden></p>
+                <p class="board-error" id="board-error"></p>
+                <div class="board-list" id="board-list"></div>
+            </div>
         </div>
 
         <div class="games">
@@ -90,43 +129,6 @@
             </div>
         </div>
 
-        <div class="card board-card">
-            <h2>general message board</h2>
-            <p class="note">
-                we miss our travellers dearly, write them a message here :)
-            </p>
-            <form id="board-form">
-                <p class="posting-as" id="board-as" hidden>
-                    posting as <b id="board-as-name"></b>
-                </p>
-                <input
-                    id="board-name"
-                    placeholder="name"
-                    maxlength="30"
-                    required
-                />
-                <textarea
-                    id="board-text"
-                    placeholder="say something (one message a day)"
-                    maxlength="500"
-                    rows="3"
-                    required
-                ></textarea>
-                <!-- honeypot: hidden from people, bots fill it in and get ignored -->
-                <input
-                    id="board-website"
-                    class="honeypot"
-                    tabindex="-1"
-                    autocomplete="off"
-                    aria-hidden="true"
-                />
-                <button>post</button>
-            </form>
-            <p class="board-wait" id="board-wait" hidden></p>
-            <p class="board-error" id="board-error"></p>
-            <div class="board-list" id="board-list"></div>
-        </div>
-
         <script src="shared.js"></script>
         <script src="2048.js"></script>
         <script src="board.js"></script>
@@ -155,8 +157,9 @@
                     .join("");
             }
 
-            // The cams card: one pill per city. Each cam gives either a video address
-            // (src, which may need looking up) or just a message to show instead.
+            // The cams card: one pill per city. Each cam gives a player address for the
+            // iframe (src, which may need looking up), a plain video file (video), or just
+            // a message to show instead.
             const CAMS = {
                 munich: {
                     label: "Munich",
@@ -166,8 +169,8 @@
                 },
                 bucharest: {
                     label: "Bucharest",
-                    // The stream restarts with a new YouTube video every few hours,
-                    // so ask the server which one is live right now
+                    // Always Piața Obor: the stream restarts with a new YouTube video every
+                    // few hours, so ask the server which video it is right now
                     src: async () => {
                         const res = await fetch("/api/bucharest-live");
                         const { videoId } = await res.json();
@@ -177,11 +180,18 @@
                         );
                     },
                     offline: "the Bucharest cam isn't live right now",
-                    credit: `webcam: <a href="https://www.youtube.com/channel/UCE5jk2omKe23EUKPJtHlzEg/live" target="_blank" rel="noopener">Calea Victoriei on YouTube</a>`,
+                    credit: `webcam: <a href="https://www.youtube.com/channel/UCE5jk2omKe23EUKPJtHlzEg/live" target="_blank" rel="noopener">Piața Obor on YouTube</a>`,
                 },
                 london: {
                     label: "London",
-                    message: "wow, such empty",
+                    // TfL JamCam: a ~10 second clip that TfL replaces every few minutes.
+                    // ?t= makes the browser fetch the newest clip instead of a cached one.
+                    video: () =>
+                        `https://s3-eu-west-1.amazonaws.com/jamcams.tfl.gov.uk/00001.04451.mp4?t=${Date.now()}`,
+                    poster: "https://s3-eu-west-1.amazonaws.com/jamcams.tfl.gov.uk/00001.04451.jpg",
+                    refresh: true, // fetch the newest clip every 3 minutes (see below)
+                    clip: true, // low-res and nearly square, so shown in its own shape (.cam-stage.clip)
+                    credit: `Chepstow Rd / Addiscombe Rd, facing Sandilands tram stop · powered by <a href="https://tfl.gov.uk/info-for/open-data-users/" target="_blank" rel="noopener">TfL Open Data</a>`,
                 },
             };
             let currentCam = "munich";
@@ -212,17 +222,30 @@
 
                 const src = cam.src ? await cam.src() : null;
                 if (currentCam !== id) return; // another pill was clicked while we were looking up
+                const videoSrc = cam.video ? cam.video() : null;
 
+                document.querySelector(".cam-stage").classList.toggle("clip", !!cam.clip);
                 const frame = document.getElementById("cam-frame");
+                const video = document.getElementById("cam-video");
                 const note = document.getElementById("cam-note");
                 frame.hidden = !src;
-                note.hidden = !!src;
-                document.getElementById("cam-note-text").textContent = src
-                    ? ""
-                    : cam.message || cam.offline;
+                video.hidden = !videoSrc;
+                note.hidden = !!(src || videoSrc);
+                document.getElementById("cam-note-text").textContent =
+                    src || videoSrc ? "" : cam.message || cam.offline;
                 // only reload when the address changed; about:blank stops the old video playing
                 const next = src || "about:blank";
                 if (frame.getAttribute("src") !== next) frame.src = next;
+
+                if (videoSrc) {
+                    video.poster = cam.poster || "";
+                    video.src = videoSrc;
+                    video.play().catch(() => {}); // autoplay can be blocked, e.g. Low Power Mode
+                } else if (video.getAttribute("src")) {
+                    video.pause(); // stop it and free the download
+                    video.removeAttribute("src");
+                    video.load();
+                }
             }
 
             // Links to each diary; the card stays hidden until the admin adds a poster
@@ -243,6 +266,8 @@
             showCam(currentCam);
             // re-check the current cam now and then, e.g. Bucharest moving to a new stream
             setInterval(() => showCam(currentCam), 10 * 60 * 1000);
+            // cams that are short clips (London) fetch the newest clip more often
+            setInterval(() => CAMS[currentCam].refresh && showCam(currentCam), 3 * 60 * 1000);
             setInterval(load, 15000); // check for admin changes every 15 seconds
             setInterval(() => tick(timers), 1000); // update the clocks every second
         </script>
