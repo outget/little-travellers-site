@@ -833,3 +833,65 @@ a.author:hover {
         max-height: 400px;
     }
 }
+
+/* area cards (weather, air, birds, time, moon), one per place, on the count-ups' 3 columns */
+.areas {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: 14px;
+}
+.env h2 {
+    margin-bottom: 12px;
+}
+.env-where {
+    margin-left: 4px;
+    color: var(--muted);
+    font-weight: 400;
+    font-size: 0.85em;
+}
+/* each line: icon, big number with small unit, then words */
+.env-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 5px 0;
+}
+.env-icon {
+    width: 1.4em;
+    text-align: center;
+    flex: none;
+}
+.env-v {
+    font-size: 1.25em;
+    font-variant-numeric: tabular-nums;
+}
+.env-row .u {
+    margin-left: 2px;
+    font-size: 0.7em;
+    color: var(--muted);
+}
+.env-label {
+    font-size: 0.85em;
+}
+.env-sub {
+    color: var(--muted);
+    font-size: 0.9em;
+}
+/* two short readings side by side (air + humidity, wind + pressure) */
+.env-pair {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 10px;
+}
+.aqi-dot {
+    display: inline-block;
+    width: 0.8em;
+    height: 0.8em;
+    border-radius: 50%;
+}
+@media (max-width: 900px) {
+    .areas {
+        grid-template-columns: 1fr;
+    }
+}

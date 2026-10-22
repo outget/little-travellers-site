@@ -445,6 +445,99 @@ app.post("/api/posts", async (req, res) => {
   res.json({ posts: diaryPosts(poster.id), nextDiaryPostAt: nextDiaryPostAt(poster.id) });
 });
 
+// ---------- area cards: weather, air, birds, sun and moon for each place ----------
+// Like YoshiTracker's "Environment at Valve HQ" card, one per place. All free services
+// with no API key: Open-Meteo (weather, air quality) and iNaturalist (bird sightings).
+// Fetched at most every 10 minutes, so visitors never wait on them.
+const AREAS = [
+  { id: "munich", name: "Munich", where: "Marienplatz", lat: 48.1374, lon: 11.5755 },
+  { id: "bucharest", name: "Bucharest", where: "Aviației", lat: 44.485, lon: 26.0979 },
+  { id: "london", name: "London", where: "Croydon", lat: 51.3756, lon: -0.0855 },
+];
+let areasCache = { data: null, fetchedAt: 0 };
+
+const getJson = async (url) => {
+  const res = await fetch(url, {
+    headers: { "User-Agent": "little-travellers-site" },
+    signal: AbortSignal.timeout(8000),
+  });
+  if (!res.ok) throw new Error(`${res.status} from ${new URL(url).host}`);
+  return res.json();
+};
+
+async function fetchArea(area) {
+  const at = `latitude=${area.lat}&longitude=${area.lon}`;
+  const weekAgo = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 10);
+  // allSettled: if one service is down, the card still shows the rest
+  const [weather, air, birds] = await Promise.allSettled([
+    getJson(
+      `https://api.open-meteo.com/v1/forecast?${at}&timezone=auto` +
+        "&current=temperature_2m,relative_humidity_2m,weather_code,cloud_cover,wind_speed_10m,pressure_msl,visibility,is_day" +
+        "&hourly=pressure_msl&past_hours=3&forecast_hours=1" +
+        "&daily=sunrise,sunset&past_days=1&forecast_days=2",
+    ),
+    getJson(`https://air-quality-api.open-meteo.com/v1/air-quality?${at}&current=european_aqi`),
+    getJson(
+      `https://api.inaturalist.org/v1/observations?lat=${area.lat}&lng=${area.lon}&radius=10` +
+        `&iconic_taxa=Aves&d1=${weekAgo}&order_by=observed_on&order=desc&per_page=1`,
+    ),
+  ]);
+
+  const out = { id: area.id, name: area.name, where: area.where };
+  if (weather.status === "fulfilled") {
+    const w = weather.value;
+    const c = w.current;
+    // Open-Meteo gives local times without an offset; turn them into real moments
+    const moment = (local) => Date.parse(local + "Z") - w.utc_offset_seconds * 1000;
+    const pressures = w.hourly.pressure_msl.filter((p) => p != null);
+    const change = pressures.at(-1) - pressures[0]; // over the last ~3 hours
+    // The most recent sunrise or sunset: "light since 7:12" / "dark since 18:07"
+    const events = [
+      ...w.daily.sunrise.map((t) => ({ type: "light", at: moment(t) })),
+      ...w.daily.sunset.map((t) => ({ type: "dark", at: moment(t) })),
+    ]
+      .filter((e) => e.at <= Date.now())
+      .sort((a, b) => b.at - a.at);
+    Object.assign(out, {
+      timezone: w.timezone,
+      temp: c.temperature_2m,
+      code: c.weather_code,
+      isDay: c.is_day === 1,
+      humidity: c.relative_humidity_2m,
+      wind: c.wind_speed_10m,
+      pressure: c.pressure_msl, // sea-level, like weather reports (Munich's own would read ~960)
+      pressureTrend: change > 1 ? "Rising" : change < -1 ? "Falling" : "Steady",
+      cloud: c.cloud_cover,
+      visibility: c.visibility,
+      sun: events[0] ?? null,
+    });
+  }
+  if (air.status === "fulfilled") out.aqi = air.value.current?.european_aqi ?? null;
+  if (birds.status === "fulfilled") {
+    const last = birds.value.results?.[0];
+    out.birds = {
+      count: birds.value.total_results,
+      last: last && {
+        species: last.taxon?.preferred_common_name || last.taxon?.name,
+        place: last.place_guess?.split(",")[0],
+      },
+    };
+  }
+  return out;
+}
+
+app.get("/api/areas", async (req, res) => {
+  if (!areasCache.data || Date.now() - areasCache.fetchedAt > 10 * 60 * 1000) {
+    try {
+      areasCache = { data: await Promise.all(AREAS.map(fetchArea)), fetchedAt: Date.now() };
+    } catch {
+      // keep showing the last good data; try again on the next visit
+      areasCache.fetchedAt = Date.now() - 9 * 60 * 1000; // ...in about a minute
+    }
+  }
+  res.json(areasCache.data ?? []);
+});
+
 // ---------- admin: every route below needs the password ----------
 
 app.use("/api/admin", (req, res, next) => {

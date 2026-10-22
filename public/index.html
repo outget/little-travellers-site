@@ -42,7 +42,14 @@
                         allowfullscreen
                         title="Webcam"
                     ></iframe>
-                    <video id="cam-video" muted autoplay loop playsinline hidden></video>
+                    <video
+                        id="cam-video"
+                        muted
+                        autoplay
+                        loop
+                        playsinline
+                        hidden
+                    ></video>
                     <div class="cam-note" id="cam-note" hidden>
                         <span class="doge" aria-hidden="true"></span>
                         <span id="cam-note-text"></span>
@@ -224,7 +231,9 @@
                 if (currentCam !== id) return; // another pill was clicked while we were looking up
                 const videoSrc = cam.video ? cam.video() : null;
 
-                document.querySelector(".cam-stage").classList.toggle("clip", !!cam.clip);
+                document
+                    .querySelector(".cam-stage")
+                    .classList.toggle("clip", !!cam.clip);
                 const frame = document.getElementById("cam-frame");
                 const video = document.getElementById("cam-video");
                 const note = document.getElementById("cam-note");
@@ -267,7 +276,10 @@
             // re-check the current cam now and then, e.g. Bucharest moving to a new stream
             setInterval(() => showCam(currentCam), 10 * 60 * 1000);
             // cams that are short clips (London) fetch the newest clip more often
-            setInterval(() => CAMS[currentCam].refresh && showCam(currentCam), 3 * 60 * 1000);
+            setInterval(
+                () => CAMS[currentCam].refresh && showCam(currentCam),
+                3 * 60 * 1000,
+            );
             setInterval(load, 15000); // check for admin changes every 15 seconds
             setInterval(() => tick(timers), 1000); // update the clocks every second
         </script>
